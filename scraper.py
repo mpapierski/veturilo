@@ -7,7 +7,7 @@ import csv
 import sys
 
 
-tz = pytz.timezone('Europe/Warsaw')
+tz = pytz.timezone(os.getenv('VETURILO_TZ', 'Europe/Warsaw'))
 
 session = HTMLSession()
 
