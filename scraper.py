@@ -5,7 +5,7 @@ import decimal
 import os
 import csv
 import sys
-
+import codecs
 
 tz = pytz.timezone(os.getenv('VETURILO_TZ', 'Europe/Warsaw'))
 
@@ -61,8 +61,10 @@ def main():
 
     total = decimal.Decimal('0')
 
-    with open('rentals.csv', 'w') as rentals:
-        writer = csv.writer(rentals)
+    with open('rentals.csv', 'w', encoding='utf-8') as rentals:
+        rentals.write(codecs.BOM_UTF8.decode('utf-8'))
+
+        writer = csv.writer(rentals, delimiter=';')
 
         for row in table.find('tr:has(td)'):
             cells = row.find('td')
