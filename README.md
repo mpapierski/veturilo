@@ -30,4 +30,4 @@ open rentals.csv
 
 # Author
 
-[michal@papierski.net](Michał Papierski)
+[Michał Papierski](michal@papierski.net)
