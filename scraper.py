@@ -6,6 +6,8 @@ import os
 import csv
 import sys
 import codecs
+import re
+
 
 tz = pytz.timezone(os.getenv('VETURILO_TZ', 'Europe/Warsaw'))
 
@@ -27,6 +29,19 @@ def parse_value(value):
         return decimal.Decimal(value)
     except decimal.InvalidOperation:
         return None
+
+
+def parse_row_id(value):
+    """Parses row number.
+
+    "row_0" -> 0
+    "row_32562" -> 32562
+    """
+    match = re.search(r'^row_(\d+)$', value)
+    if match is not None:
+        (row_id,) = match.groups()
+        return int(row_id)
+    return None
 
 
 def main():
@@ -72,13 +87,18 @@ def main():
             date_text = cells[0].text.strip()
             if not date_text:
                 continue
+
+            row_id = parse_row_id(row.attrs['id'])
+            if row_id is None:
+                raise RuntimeError('Invalid row id')
+
             date_naive = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
             date = tz.localize(date_naive)
             description = cells[1].text.strip()
             value = parse_value(cells[2].text.strip())
             if value is not None:
                 total += value
-            writer.writerow([date, description, value])
+            writer.writerow([row_id, date, description, value])
 
 
 if __name__ == '__main__':

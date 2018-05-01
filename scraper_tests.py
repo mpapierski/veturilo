@@ -11,8 +11,10 @@ class ScraperTestCase(TestCase):
         'VETURILO_PASS': 'dupa.8'
     })
     def setUp(self):
-        from scraper import parse_value
+        from scraper import parse_value, parse_row_id
         self.parse_value = parse_value
+        self.parse_row_id = parse_row_id
+
 
     def test_positive(self):
         value = self.parse_value('+10.00')
@@ -26,3 +28,16 @@ class ScraperTestCase(TestCase):
 
     def test_invalid(self):
         self.assertIsNone(self.parse_value(''))
+
+    def test_parse_row_id_small(self):
+        value = self.parse_row_id('row_0')
+        self.assertIsNotNone(value)
+        self.assertEquals(value, 0)
+
+    def test_parse_row_id_large(self):
+        value = self.parse_row_id('row_413631')
+        self.assertIsNotNone(value)
+        self.assertEquals(value, 413631)
+
+    def test_parse_row_id_invalid(self):
+        self.assertIsNone(self.parse_row_id('row_asdf'))
