@@ -48,11 +48,9 @@ def main():
 
     r = session.get('https://www.veturilo.waw.pl/veturilo-login/')
     r.raise_for_status()
-    r.html.render()
 
     r = session.get('https://poland.nextbike.net/iframe/?domain=vp&L=pl&id=login&redirect_index=https://www.veturilo.waw.pl/veturilo-login&redirect_account=https://www.veturilo.waw.pl/account')
     r.raise_for_status()
-    r.html.render()
 
     form = r.html.find('#mailform', first=True)
     if form is None:
