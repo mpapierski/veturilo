@@ -29,49 +29,55 @@ def parse_value(value):
         return None
 
 
-r = session.get('https://www.veturilo.waw.pl/veturilo-login/')
-r.raise_for_status()
-r.html.render()
+def main():
 
-r = session.get('https://poland.nextbike.net/iframe/?domain=vp&L=pl&id=login&redirect_index=https://www.veturilo.waw.pl/veturilo-login&redirect_account=https://www.veturilo.waw.pl/account')
-r.raise_for_status()
-r.html.render()
+    r = session.get('https://www.veturilo.waw.pl/veturilo-login/')
+    r.raise_for_status()
+    r.html.render()
 
-form = r.html.find('#mailform', first=True)
-if form is None:
-    raise RuntimeError('Unable to find form')
+    r = session.get('https://poland.nextbike.net/iframe/?domain=vp&L=pl&id=login&redirect_index=https://www.veturilo.waw.pl/veturilo-login&redirect_account=https://www.veturilo.waw.pl/account')
+    r.raise_for_status()
+    r.html.render()
 
-r = session.post('https://poland.nextbike.net/iframe/?id=login&L=pl&domain=vp', data={
-    'logintype': 'login',
-    'redirect_index': 'https://www.veturilo.waw.pl/veturilo-login',
-    'redirect_account': 'https://www.veturilo.waw.pl/account',
-    'user': veturilo_user,
-    'pass': veturilo_pass,
-    'submit': 'Zaloguj'
-})
-r.raise_for_status()
+    form = r.html.find('#mailform', first=True)
+    if form is None:
+        raise RuntimeError('Unable to find form')
 
-r = session.get('https://poland.nextbike.net/iframe/?L=pl&domain=vp')
-r.raise_for_status()
-table = r.html.find('#contenttable_account', first=True)
-if table is None:
-    raise RuntimeError('Unable to find table')
+    r = session.post('https://poland.nextbike.net/iframe/?id=login&L=pl&domain=vp', data={
+        'logintype': 'login',
+        'redirect_index': 'https://www.veturilo.waw.pl/veturilo-login',
+        'redirect_account': 'https://www.veturilo.waw.pl/account',
+        'user': veturilo_user,
+        'pass': veturilo_pass,
+        'submit': 'Zaloguj'
+    })
+    r.raise_for_status()
 
-total = decimal.Decimal('0')
+    r = session.get('https://poland.nextbike.net/iframe/?L=pl&domain=vp')
+    r.raise_for_status()
+    table = r.html.find('#contenttable_account', first=True)
+    if table is None:
+        raise RuntimeError('Unable to find table')
 
-with open('rentals.csv', 'w') as rentals:
-    writer = csv.writer(rentals)
+    total = decimal.Decimal('0')
 
-    for row in table.find('tr:has(td)'):
-        cells = row.find('td')
+    with open('rentals.csv', 'w') as rentals:
+        writer = csv.writer(rentals)
 
-        date_text = cells[0].text.strip()
-        if not date_text:
-            continue
-        date_naive = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
-        date = tz.localize(date_naive)
-        description = cells[1].text.strip()
-        value = parse_value(cells[2].text.strip())
-        if value is not None:
-            total += value
-        writer.writerow([date, description, value])
+        for row in table.find('tr:has(td)'):
+            cells = row.find('td')
+
+            date_text = cells[0].text.strip()
+            if not date_text:
+                continue
+            date_naive = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
+            date = tz.localize(date_naive)
+            description = cells[1].text.strip()
+            value = parse_value(cells[2].text.strip())
+            if value is not None:
+                total += value
+            writer.writerow([date, description, value])
+
+
+if __name__ == '__main__':
+    main()
